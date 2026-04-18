@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AgroAir — Acesso administrativo</title>
+  <meta name="description" content="Acesso ao painel administrativo da AgroAir.">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet"/>
+  
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --bg: #f3f6f4;
+        --surface: rgba(255, 255, 255, .84);
+        --surface-strong: #ffffff;
+        --border: rgba(13, 20, 17, .08);
+        --accent: #4af0c4;
+        --accent-deep: #2f8b5e;
+        --accent-glow: rgba(74, 240, 196, .14);
+        --text: #0b1118;
+        --text-secondary: #5d666f;
+        --muted: #98a1aa;
+        --radius: 18px;
+        --ease: cubic-bezier(.4, 0, .2, 1);
+      }
+
+      html { height: 100%; }
+      body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background:
+          radial-gradient(circle at 12% 10%, rgba(74, 240, 196, .16), transparent 26%),
+          radial-gradient(circle at 90% 20%, rgba(47, 139, 94, .12), transparent 22%),
+          linear-gradient(180deg, #f7faf8 0%, #eef3ef 100%);
+        color: var(--text);
+        font-family: 'DM Sans', -apple-system, sans-serif;
+        font-size: 15px;
+        -webkit-font-smoothing: antialiased;
+        position: relative;
+        overflow-x: hidden;
+      }
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background:
+          linear-gradient(120deg, rgba(255, 255, 255, .58), transparent 34%, rgba(255, 255, 255, .18)),
+          linear-gradient(rgba(13, 20, 17, .03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(13, 20, 17, .03) 1px, transparent 1px);
+        background-size: auto, 84px 84px, 84px 84px;
+        opacity: .28;
+      }
+
+      /* ── ANIMATED BG ── */
+      .bg-gradient {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+      .bg-gradient .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(120px);
+        opacity: .08;
+      }
+      .bg-gradient .orb-1 {
+        width: 620px; height: 620px; top: -220px; left: -120px;
+        background: radial-gradient(circle, #7b6cff 0%, transparent 70%);
+        animation: drift 20s ease-in-out infinite alternate;
+      }
+      .bg-gradient .orb-2 {
+        width: 520px; height: 520px; bottom: -160px; right: -120px;
+        background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+        animation: drift 25s ease-in-out infinite alternate-reverse;
+      }
+      .bg-gradient .orb-3 {
+        width: 320px; height: 320px; top: 38%; left: 50%;
+        background: radial-gradient(circle, #60a5fa 0%, transparent 70%);
+        animation: drift 18s ease-in-out infinite alternate;
+      }
+      @keyframes drift {
+        0% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(30px, -20px) scale(1.08); }
+        100% { transform: translate(-20px, 15px) scale(.96); }
+      }
+
+      /* ── HEADER ── */
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0 clamp(1.1rem, 4vw, 3rem);
+        height: 72px;
+        background: rgba(11, 17, 24, .80);
+        backdrop-filter: blur(20px) saturate(160%);
+        border-bottom: 1px solid rgba(255, 255, 255, .08);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, .16);
+      }
+      .logo {
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 1.28rem;
+        letter-spacing: -.02em;
+        color: #fff;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+      }
+      .logo span { color: var(--accent); }
+      .logo-icon {
+        width: 30px;
+        height: 30px;
+        background: linear-gradient(135deg, var(--accent-deep), var(--accent));
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 22px rgba(74, 240, 196, .16);
+      }
+      .logo-icon svg { width: 16px; height: 16px; fill: #fff; }
+
+      nav { display: flex; gap: 2rem; align-items: center; }
+      nav a {
+        color: rgba(255, 255, 255, .65);
+        text-decoration: none;
+        font-size: .84rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .12em;
+        transition: color .2s var(--ease);
+      }
+      nav a:hover { color: #fff; }
+
+      .header-btns { display: flex; gap: .75rem; align-items: center; }
+      .header-btns a {
+        text-decoration: none;
+        font-size: .82rem;
+        font-weight: 700;
+        border-radius: 12px;
+        padding: .7rem 1.15rem;
+        transition: all .2s var(--ease);
+        cursor: pointer;
+      }
+      .header-btns a.create {
+        color: #06110a;
+        background: var(--accent);
+        border: 1px solid var(--accent);
+        box-shadow: 0 10px 20px rgba(74, 240, 196, .14);
+      }
+      .header-btns a.create:hover { background: var(--accent-deep); border-color: var(--accent-deep); }
+      .header-btns a.access {
+        color: #e8edf2;
+        background: rgba(255, 255, 255, .04);
+        border: 1px solid rgba(255, 255, 255, .10);
+      }
+      .header-btns a.access:hover { border-color: rgba(74, 240, 196, .32); color: #fff; }
+
+      /* ── MAIN ── */
+      main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4.4rem clamp(1.1rem, 4vw, 3rem) 3rem;
+        position: relative;
+        z-index: 1;
+      }
+
+      .hero {
+        text-align: center;
+        max-width: 760px;
+        animation: heroIn .7s var(--ease) both;
+      }
+      @keyframes heroIn {
+        from { opacity: 0; transform: translateY(28px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .hero-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        font-size: .74rem;
+        font-weight: 800;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+        color: var(--accent-deep);
+        background: rgba(74, 240, 196, .12);
+        padding: .45rem 1rem;
+        border-radius: 999px;
+        margin-bottom: 1.35rem;
+        border: 1px solid rgba(74, 240, 196, .12);
+      }
+      .hero-eyebrow .dot {
+        width: 6px; height: 6px; border-radius: 50%;
+        background: var(--accent-deep);
+        box-shadow: 0 0 0 6px rgba(74, 240, 196, .08);
+        animation: pulse 2s ease infinite;
+      }
+      @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+      .hero-title {
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: clamp(2.5rem, 5vw, 4.3rem);
+        letter-spacing: -.04em;
+        line-height: 1.02;
+        color: var(--text);
+        margin-bottom: 1.15rem;
+      }
+      .hero-title .accent { color: var(--accent-deep); }
+      .hero-subtitle {
+        font-size: 1.06rem;
+        color: var(--text-secondary);
+        font-weight: 400;
+        line-height: 1.7;
+        margin-bottom: 3.2rem;
+        max-width: 620px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      /* ── NAV BLOCKS ── */
+      .nav-blocks {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1.35rem;
+        width: 100%;
+        max-width: 1020px;
+        animation: heroIn .7s var(--ease) .15s both;
+      }
+      .nav-block {
+        background: rgba(255, 255, 255, .88);
+        border: 1px solid rgba(13, 20, 17, .08);
+        border-radius: 22px;
+        padding: 2rem 1.75rem;
+        transition: transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease);
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        text-decoration: none;
+        color: var(--text);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 18px 38px rgba(7, 18, 12, .08);
+      }
+      .nav-block::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(74, 240, 196, .08), transparent 54%);
+        opacity: 0;
+        transition: opacity .25s var(--ease);
+      }
+      .nav-block::after {
+        content: '';
+        position: absolute;
+        left: 18px;
+        right: 18px;
+        top: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent), var(--accent-deep));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform .3s var(--ease);
+      }
+      .nav-block:hover::before { opacity: 1; }
+      .nav-block:hover::after { transform: scaleX(1); }
+      .nav-block:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 24px 48px rgba(0, 0, 0, .10);
+        border-color: rgba(74, 240, 196, .20);
+      }
+      .nav-block-icon {
+        width: 52px;
+        height: 52px;
+        background: rgba(74, 240, 196, .12);
+        border: 1px solid rgba(74, 240, 196, .15);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.2rem;
+      }
+      .nav-block-icon svg { width: 22px; height: 22px; color: var(--accent-deep); }
+      .nav-block-title {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.18rem;
+        font-weight: 800;
+        margin-bottom: .55rem;
+        letter-spacing: -.02em;
+      }
+      .nav-block-subtitle {
+        font-size: .86rem;
+        color: var(--text-secondary);
+        line-height: 1.55;
+      }
+      .nav-block-arrow {
+        margin-top: auto;
+        padding-top: 1.3rem;
+        font-size: .82rem;
+        font-weight: 700;
+        color: var(--accent-deep);
+        display: flex;
+        align-items: center;
+        gap: .35rem;
+        opacity: 0;
+        transform: translateX(-8px);
+        transition: all .25s var(--ease);
+      }
+      .nav-block:hover .nav-block-arrow { opacity: 1; transform: translateX(0); }
+
+      /* ── FOOTER ── */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 1.6rem clamp(1.1rem, 4vw, 3rem);
+        background: rgba(247, 249, 248, .9);
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1.25rem;
+        font-size: .78rem;
+        color: var(--muted);
+        position: relative;
+        z-index: 1;
+      }
+      footer .footer-links { display: flex; gap: 1.6rem; }
+      footer a { color: var(--muted); text-decoration: none; transition: color .2s var(--ease); }
+      footer a:hover { color: var(--text); }
+      footer .footer-badge {
+        display: flex;
+        align-items: center;
+        gap: .45rem;
+        color: var(--text-secondary);
+        font-weight: 600;
+      }
+      footer .footer-badge svg { width: 13px; height: 13px; color: var(--accent-deep); }
+
+      /* ── LOGIN MODAL ── */
+      .login-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(11, 17, 24, .42);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        backdrop-filter: blur(10px);
+        animation: fadeIn .2s var(--ease);
+        padding: 16px;
+      }
+      @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+      .login-box {
+        background: rgba(255, 255, 255, .94);
+        border-radius: 24px;
+        padding: 2.5rem 2.25rem 2rem;
+        width: min(100%, 400px);
+        position: relative;
+        box-shadow: 0 28px 60px rgba(0, 0, 0, .16), 0 0 0 1px rgba(13, 20, 17, .08);
+        border: 1px solid rgba(13, 20, 17, .08);
+        animation: modalUp .35s var(--ease);
+      }
+      @keyframes modalUp { from { opacity: 0; transform: translateY(16px) scale(.98) } to { opacity: 1; transform: translateY(0) scale(1) } }
+      .login-box h2 {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.42rem;
+        font-weight: 800;
+        margin-bottom: 4px;
+        letter-spacing: -.02em;
+      }
+      .login-box .login-sub {
+        font-size: .86rem;
+        color: var(--text-secondary);
+        margin-bottom: 1.6rem;
+      }
+      .login-fechar {
+        position: absolute;
+        top: 16px;
+        right: 18px;
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: none;
+        font-size: 22px;
+        color: var(--muted);
+        cursor: pointer;
+        transition: background .2s var(--ease), color .2s var(--ease), transform .2s var(--ease);
+      }
+      .login-fechar:hover { background: rgba(0, 0, 0, .04); color: var(--text); transform: rotate(90deg); }
+      .login-campo { margin-bottom: 1rem; }
+      .login-campo label {
+        display: block;
+        font-size: .78rem;
+        font-weight: 700;
+        color: var(--text-secondary);
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+      }
+      .login-campo input {
+        width: 100%;
+        padding: 12px 14px;
+        background: var(--bg);
+        border: 1px solid rgba(13, 20, 17, .08);
+        border-radius: 12px;
+        font-size: 14px;
+        font-family: 'DM Sans', sans-serif;
+        outline: none;
+        transition: all .2s var(--ease);
+      }
+      .login-campo input::placeholder { color: #9aa0a8; }
+      .login-campo input:focus {
+        border-color: var(--accent-deep);
+        box-shadow: 0 0 0 4px var(--accent-glow);
+      }
+      .login-erro {
+        color: #dc2626;
+        font-size: .8rem;
+        min-height: 18px;
+        margin-bottom: .5rem;
+        font-weight: 500;
+      }
+      .login-btn {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+        color: #06110a;
+        border: none;
+        border-radius: 12px;
+        font-size: .92rem;
+        font-weight: 800;
+        cursor: pointer;
+        font-family: 'DM Sans', sans-serif;
+        transition: transform .2s var(--ease), filter .2s var(--ease);
+      }
+      .login-btn:hover { filter: brightness(1.02); }
+      .login-btn:active { transform: scale(.98); }
+      .login-btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+      /* ── RESPONSIVE ── */
+      @media (max-width: 920px) {
+        .hero-title { font-size: 2.7rem; }
+        .nav-blocks { grid-template-columns: 1fr; max-width: 460px; }
+        header { padding: 0 1.15rem; }
+        nav { display: none; }
+      }
+      @media (max-width: 600px) {
+        main { padding: 2.8rem 1.15rem 2rem; }
+        .hero-title { font-size: 2.3rem; }
+        .login-box { padding: 2rem 1.5rem 1.5rem; }
+        .header-btns a { padding: .55rem .95rem; font-size: .76rem; }
+        footer { justify-content: center; text-align: center; }
+      }
+    </style>
+
+</head>
+<body>
+
+  <!-- Animated background orbs -->
+  <div class="bg-gradient">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <header>
+    <a href="#" class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
+      Agro<span>Air</span>
+    </a>
+    <nav>
+      <a href="#">Recursos</a>
+      <a href="agroair_v2_verde.html">Catálogo</a>
+      <a href="#">Suporte</a>
+    </nav>
+    <div class="header-btns">
+      <a href="#" class="access" id="btn-acessar">Acessar painel</a>
+      <a href="agroair_v2_verde.html" class="create">Ver catálogo</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div class="hero-eyebrow"><span class="dot"></span> Plataforma ativa</div>
+      <h1 class="hero-title">Gestão premium<br>para sua <span class="accent">vitrine</span></h1>
+      <p class="hero-subtitle">Vitrine digital com painel administrativo, captura de leads e integração com WhatsApp, com acabamento de produto sênior.</p>
+    </div>
+
+    <div class="nav-blocks">
+      <a href="agroair_v2_verde.html" class="nav-block">
+        <div class="nav-block-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+        </div>
+        <div class="nav-block-title">Catálogo AgroAir</div>
+        <div class="nav-block-subtitle">Compressores, condensadores e peças para climatização agrícola e automotiva.</div>
+        <div class="nav-block-arrow">Explorar →</div>
+      </a>
+
+      <a href="#" class="nav-block" id="btn-acessar-2">
+        <div class="nav-block-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        </div>
+        <div class="nav-block-title">Painel Admin</div>
+        <div class="nav-block-subtitle">Gerencie produtos, veja leads captados e controle seu catálogo.</div>
+        <div class="nav-block-arrow">Acessar →</div>
+      </a>
+
+      <a href="#" class="nav-block">
+        <div class="nav-block-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        </div>
+        <div class="nav-block-title">Suporte</div>
+        <div class="nav-block-subtitle">Precisa de ajuda? Fale com nossa equipe de desenvolvimento.</div>
+        <div class="nav-block-arrow">Contato →</div>
+      </a>
+    </div>
+  </main>
+
+  <!-- Login Modal -->
+  <div id="login-modal" class="login-overlay" style="display:none">
+    <div class="login-box">
+      <button class="login-fechar" id="login-fechar">×</button>
+      <h2>Acessar Painel</h2>
+      <p class="login-sub">Entre com suas credenciais de administrador</p>
+      <form id="login-form">
+        <div class="login-campo">
+          <label for="login-email">E-mail</label>
+          <input type="email" id="login-email" placeholder="admin@exemplo.com" required>
+        </div>
+        <div class="login-campo">
+          <label for="login-senha">Senha</label>
+          <input type="password" id="login-senha" placeholder="••••••••" required>
+        </div>
+        <div id="login-erro" class="login-erro"></div>
+        <button type="submit" class="login-btn" id="login-btn">
+          <span class="btn-texto">Entrar</span>
+          <span class="btn-loading" style="display:none">Entrando...</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      Conexão protegida
+    </div>
+    <div class="footer-links">
+      <a href="#">Privacidade</a>
+      <a href="#">Termos</a>
+      <a href="#">Contato</a>
+    </div>
+    <span>© 2026 AgroAir</span>
+  </footer>
+
+  <script src="login.js"></script>
+  <script>
+    // Also bind the admin card to open login
+    document.getElementById('btn-acessar-2')?.addEventListener('click', e => {
+      e.preventDefault();
+      document.getElementById('btn-acessar')?.click();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AgroAir — Painel administrativo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  
+    <style>
+      :root {
+        --bg: #0b0f14;
+        --bg-2: #0f131a;
+        --surface: rgba(18, 22, 30, .88);
+        --surface2: rgba(24, 30, 39, .94);
+        --surface3: rgba(33, 40, 52, .94);
+        --border: rgba(255, 255, 255, .06);
+        --border-hover: rgba(255, 255, 255, .12);
+        --accent: #4af0c4;
+        --accent-deep: #2f8b5e;
+        --accent-glow: rgba(74, 240, 196, .08);
+        --green: #25d366;
+        --amber: #fbbf24;
+        --red: #f87171;
+        --text: #eef2f7;
+        --text-secondary: #97a0af;
+        --muted: #66707f;
+        --font: 'DM Sans', -apple-system, sans-serif;
+        --syne: 'Syne', sans-serif;
+        --ease: cubic-bezier(.4, 0, .2, 1);
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html { min-height: 100%; }
+      body {
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 12% 10%, rgba(74, 240, 196, .10), transparent 24%),
+          radial-gradient(circle at 88% 0%, rgba(47, 139, 94, .10), transparent 22%),
+          linear-gradient(180deg, var(--bg) 0%, #0a0d12 100%);
+        color: var(--text);
+        font-family: var(--font);
+        font-size: 14px;
+        -webkit-font-smoothing: antialiased;
+        position: relative;
+        overflow-x: hidden;
+      }
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          linear-gradient(120deg, rgba(255, 255, 255, .04), transparent 26%, rgba(255, 255, 255, .02)),
+          linear-gradient(rgba(255, 255, 255, .03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, .03) 1px, transparent 1px);
+        background-size: auto, 84px 84px, 84px 84px;
+        opacity: .24;
+        mix-blend-mode: soft-light;
+      }
+
+      /* ── HEADER ── */
+      .hdr {
+        background: rgba(16, 20, 27, .86);
+        border-bottom: 1px solid rgba(255, 255, 255, .06);
+        padding: 0 clamp(1rem, 3vw, 2rem);
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        backdrop-filter: blur(18px) saturate(140%);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, .18);
+      }
+      .hdr-left { display: flex; align-items: center; gap: 16px; }
+      .logo {
+        font-family: var(--syne);
+        font-weight: 800;
+        font-size: 1.15rem;
+        color: #fff;
+        text-decoration: none;
+        letter-spacing: -.02em;
+      }
+      .logo span { color: var(--accent); }
+      .hdr-badge {
+        background: rgba(74, 240, 196, .08);
+        border: 1px solid rgba(74, 240, 196, .15);
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 10px;
+        color: var(--accent);
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+      }
+      .hdr-right { display: flex; align-items: center; gap: 12px; }
+      .hdr-user {
+        font-size: 12px;
+        color: var(--text-secondary);
+        background: rgba(255, 255, 255, .04);
+        padding: 7px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+      }
+      .btn-logout {
+        background: none;
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+        padding: 7px 16px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: var(--font);
+        transition: all .2s var(--ease);
+      }
+      .btn-logout:hover { border-color: var(--red); color: var(--red); background: rgba(248, 113, 113, .04); }
+
+      /* ── LAYOUT ── */
+      .container {
+        max-width: 1140px;
+        margin: 0 auto;
+        padding: 30px clamp(1rem, 3vw, 2rem) 44px;
+      }
+
+      /* ── STATS ── */
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 28px;
+      }
+      .stat {
+        position: relative;
+        background: linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, .02));
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px;
+        overflow: hidden;
+        transition: border-color .2s var(--ease), transform .2s var(--ease), box-shadow .2s var(--ease);
+      }
+      .stat::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(74, 240, 196, .04), transparent 64%);
+        opacity: 0;
+        transition: opacity .2s var(--ease);
+      }
+      .stat:hover {
+        border-color: var(--border-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 18px 34px rgba(0, 0, 0, .14);
+      }
+      .stat:hover::before { opacity: 1; }
+      .stat-label {
+        font-size: 11px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+      .stat-value {
+        font-family: var(--syne);
+        font-size: 30px;
+        font-weight: 800;
+        color: var(--text);
+        letter-spacing: -.03em;
+      }
+      .stat-value .unit {
+        font-size: 14px;
+        color: var(--text-secondary);
+        font-weight: 500;
+        font-family: var(--font);
+      }
+
+      /* ── TABS ── */
+      .tabs {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 24px;
+        background: rgba(255, 255, 255, .04);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 4px;
+        width: fit-content;
+      }
+      .tab-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        padding: 9px 20px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: var(--font);
+        transition: all .2s var(--ease);
+      }
+      .tab-btn:hover { color: var(--text); }
+      .tab-btn.ativo {
+        background: linear-gradient(135deg, var(--accent), rgba(74, 240, 196, .82));
+        color: #07120d;
+      }
+      .tab-cont { font-size: 11px; color: inherit; opacity: .72; margin-left: 4px; }
+
+      /* ── TOOLBAR ── */
+      .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        gap: 12px;
+      }
+      .toolbar h2 {
+        font-family: var(--syne);
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: -.02em;
+      }
+      .btn-novo {
+        background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+        color: #06110a;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-weight: 800;
+        font-size: 13px;
+        cursor: pointer;
+        font-family: var(--font);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 10px 22px rgba(74, 240, 196, .12);
+        transition: transform .2s var(--ease), filter .2s var(--ease);
+      }
+      .btn-novo:hover { filter: brightness(1.02); transform: translateY(-1px); }
+      .btn-novo svg { width: 14px; height: 14px; }
+
+      /* ── TABELA ── */
+      .tbl-wrap {
+        background: rgba(255, 255, 255, .03);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 18px 36px rgba(0, 0, 0, .12);
+      }
+      table { width: 100%; border-collapse: collapse; }
+      th {
+        text-align: left;
+        padding: 13px 16px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        color: var(--muted);
+        font-weight: 700;
+        background: rgba(255, 255, 255, .03);
+        border-bottom: 1px solid var(--border);
+      }
+      td {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: middle;
+        font-size: 13px;
+        color: rgba(238, 242, 247, .94);
+      }
+      tr:last-child td { border-bottom: none; }
+      tr { transition: background .15s var(--ease); }
+      tr:hover td { background: rgba(74, 240, 196, .02); }
+      .nome-cell strong { font-weight: 700; font-size: 13px; }
+      .cod {
+        display: block;
+        font-size: 11px;
+        color: var(--muted);
+        font-family: 'SF Mono', monospace;
+        margin-top: 2px;
+      }
+      .preco-col { font-weight: 800; color: var(--accent); font-size: 14px; }
+      .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .3px;
+      }
+      .badge-ok { background: rgba(37, 211, 102, .10); color: #25d366; }
+      .badge-enc { background: rgba(251, 191, 36, .10); color: #fbbf24; }
+      .acoes { display: flex; gap: 6px; }
+      .btn-editar, .btn-excluir {
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: none;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: var(--font);
+        transition: all .15s var(--ease);
+      }
+      .btn-editar {
+        background: rgba(255, 255, 255, .04);
+        color: var(--text-secondary);
+        border: 1px solid var(--border);
+      }
+      .btn-editar:hover { border-color: rgba(74, 240, 196, .24); color: var(--accent); }
+      .btn-excluir { background: rgba(248, 113, 113, .08); color: var(--red); }
+      .btn-excluir:hover { background: rgba(248, 113, 113, .15); }
+      .loading-row, .vazio-row, .erro-row {
+        text-align: center;
+        color: var(--muted);
+        padding: 50px 16px !important;
+        font-size: 13px;
+      }
+      .erro-row { color: var(--red); }
+
+      /* ── FORMULÁRIO ── */
+      .painel-form {
+        background: linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, .02));
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 18px 36px rgba(0, 0, 0, .10);
+        animation: slideDown .25s var(--ease);
+      }
+      @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .form-titulo {
+        font-family: var(--syne);
+        font-size: 16px;
+        font-weight: 800;
+        margin-bottom: 20px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        letter-spacing: -.01em;
+      }
+      .form-titulo::before {
+        content: '';
+        width: 3px;
+        height: 16px;
+        border-radius: 999px;
+        background: linear-gradient(180deg, var(--accent), var(--accent-deep));
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-bottom: 20px;
+      }
+      .form-grid .full { grid-column: 1 / -1; }
+      .campo-admin label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--muted);
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+      }
+      .campo-admin input, .campo-admin select, .campo-admin textarea {
+        width: 100%;
+        padding: 11px 12px;
+        background: rgba(255, 255, 255, .04);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        color: var(--text);
+        font-size: 13px;
+        font-family: var(--font);
+        outline: none;
+        transition: all .2s var(--ease);
+      }
+      .campo-admin input:focus, .campo-admin select:focus, .campo-admin textarea:focus {
+        border-color: rgba(74, 240, 196, .22);
+        box-shadow: 0 0 0 4px rgba(74, 240, 196, .08);
+      }
+      .campo-admin input::placeholder, .campo-admin textarea::placeholder { color: var(--muted); }
+      .campo-admin textarea { resize: vertical; min-height: 72px; }
+      .campo-check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-top: 22px;
+      }
+      .campo-check input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--accent);
+        cursor: pointer;
+      }
+      .campo-check label {
+        margin-bottom: 0;
+        font-size: 12px;
+        color: var(--text-secondary);
+        text-transform: none;
+        letter-spacing: 0;
+        cursor: pointer;
+      }
+      .form-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .form-erro { color: var(--red); font-size: 12px; margin-left: 10px; }
+      .form-sucesso { color: var(--green); font-size: 12px; margin-left: 10px; }
+      .config-hint {
+        color: var(--text-secondary);
+        font-size: 13px;
+        line-height: 1.6;
+        margin-bottom: 18px;
+      }
+      .config-hint code {
+        background: rgba(255, 255, 255, .04);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 2px 7px;
+        color: var(--accent);
+        font-size: 12px;
+      }
+      .btn-salvar {
+        background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+        color: #06110a;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 12px;
+        font-weight: 800;
+        font-size: 13px;
+        cursor: pointer;
+        font-family: var(--font);
+        box-shadow: 0 10px 22px rgba(74, 240, 196, .12);
+        transition: transform .2s var(--ease), filter .2s var(--ease);
+      }
+      .btn-salvar:hover { filter: brightness(1.02); transform: translateY(-1px); }
+      .btn-salvar:disabled { opacity: .45; cursor: not-allowed; }
+      .btn-cancelar {
+        background: none;
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+        padding: 10px 18px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: var(--font);
+        transition: all .2s var(--ease);
+      }
+      .btn-cancelar:hover { border-color: var(--text-secondary); color: var(--text); background: rgba(255, 255, 255, .03); }
+
+      /* ── RESPONSIVE ── */
+      @media (max-width: 768px) {
+        .stats { grid-template-columns: 1fr; }
+        .form-grid { grid-template-columns: 1fr; }
+        .acoes { flex-direction: column; gap: 4px; }
+        table { font-size: 12px; }
+        th, td { padding: 10px 12px; }
+        .toolbar { flex-direction: column; gap: 12px; align-items: stretch; }
+        .tabs { width: 100%; justify-content: space-between; }
+        .tab-btn { width: 100%; }
+      }
+    </style>
+
+</head>
+<body>
+
+  <header class="hdr">
+    <div class="hdr-left">
+      <a href="Login.html" class="logo">Agro<span>Air</span></a>
+      <span class="hdr-badge">Admin</span>
+    </div>
+    <div class="hdr-right">
+      <span class="hdr-user">admin@agroair.com</span>
+      <button class="btn-logout" id="btn-logout">Sair</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Produtos cadastrados</div>
+        <div class="stat-value" id="stat-produtos">—</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Leads captados</div>
+        <div class="stat-value" id="stat-leads">—</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Em estoque</div>
+        <div class="stat-value" id="stat-estoque">—</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn ativo" id="tab-produtos">Produtos <span class="tab-cont" id="cont-produtos"></span></button>
+      <button class="tab-btn" id="tab-leads">Leads <span class="tab-cont" id="cont-leads"></span></button>
+      <button class="tab-btn" id="tab-config">Configuração</button>
+    </div>
+
+    <!-- SEÇÃO PRODUTOS -->
+    <div id="secao-produtos">
+      <div id="painel-form" class="painel-form" style="display:none">
+        <h3 class="form-titulo" id="form-titulo">Novo Produto</h3>
+        <form id="form-produto">
+          <div class="form-grid">
+            <div class="campo-admin">
+              <label for="f-nome">Nome *</label>
+              <input type="text" id="f-nome" required placeholder="Compressor Sanden 5H14">
+            </div>
+            <div class="campo-admin">
+              <label for="f-codigo">Código</label>
+              <input type="text" id="f-codigo" placeholder="SD-5H14-UNIV">
+            </div>
+            <div class="campo-admin">
+              <label for="f-preco">Preço (R$) *</label>
+              <input type="number" id="f-preco" step="0.01" min="0" required placeholder="2450.00">
+            </div>
+            <div class="campo-admin">
+              <label for="f-categoria">Categoria</label>
+              <select id="f-categoria">
+                <option value="">Selecione</option>
+                <option>Compressores</option>
+                <option>Condensadores</option>
+                <option>Evaporadores</option>
+                <option>Válvulas</option>
+              </select>
+            </div>
+            <div class="campo-admin">
+              <label for="f-linha">Linha</label>
+              <select id="f-linha">
+                <option value="">Selecione</option>
+                <option>Agrícola</option>
+                <option>Automotiva</option>
+                <option>Pesada</option>
+              </select>
+            </div>
+            <div class="campo-admin">
+              <label for="f-status">Status</label>
+              <select id="f-status">
+                <option value="em_estoque">Em estoque</option>
+                <option value="sob_encomenda">Sob encomenda</option>
+              </select>
+            </div>
+            <div class="campo-admin">
+              <label for="f-marca">Marca</label>
+              <input type="text" id="f-marca" placeholder="Sanden">
+            </div>
+            <div class="campo-admin">
+              <label for="f-tipo-maquina">Tipo de Máquina</label>
+              <input type="text" id="f-tipo-maquina" placeholder="Trator">
+            </div>
+            <div class="campo-admin full">
+              <label for="f-descricao">Descrição</label>
+              <textarea id="f-descricao" placeholder="Descrição detalhada do produto..."></textarea>
+            </div>
+            <div class="campo-admin full">
+              <label for="f-compatibilidade">Compatibilidade</label>
+              <input type="text" id="f-compatibilidade" placeholder="John Deere, Massey Ferguson, New Holland">
+            </div>
+            <div class="campo-admin full">
+              <label for="f-foto-url">URL da Foto</label>
+              <input type="url" id="f-foto-url" placeholder="https://exemplo.com/foto.jpg">
+            </div>
+            <div class="campo-check">
+              <input type="checkbox" id="f-destaque">
+              <label for="f-destaque">Produto em destaque</label>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-salvar" id="btn-salvar">Salvar Produto</button>
+            <button type="button" class="btn-cancelar" id="btn-cancelar">Cancelar</button>
+            <span class="form-erro" id="form-erro"></span>
+          </div>
+        </form>
+      </div>
+
+      <div class="toolbar">
+        <h2>Produtos</h2>
+        <button class="btn-novo" id="btn-novo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Novo Produto
+        </button>
+      </div>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Categoria</th>
+              <th>Linha</th>
+              <th>Preço</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-produtos">
+            <tr><td colspan="6" class="loading-row">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SEÇÃO LEADS -->
+    <div id="secao-leads" style="display:none">
+      <div class="toolbar">
+        <h2>Leads Captados</h2>
+      </div>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Telefone</th>
+              <th>Cidade</th>
+              <th>Produto</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-leads">
+            <tr><td colspan="5" class="loading-row">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SEÇÃO CONFIG -->
+    <div id="secao-config" style="display:none">
+      <div class="toolbar">
+        <h2>Configuração da Loja</h2>
+      </div>
+
+      <div class="painel-form" style="display:block">
+        <h3 class="form-titulo">Informações públicas</h3>
+        <p class="config-hint">
+          Esses campos alimentam o catálogo público e o botão do WhatsApp.
+          Na mensagem, tu pode usar <code>{produto}</code> e <code>{codigo}</code>.
+        </p>
+        <form id="form-config">
+          <div class="form-grid">
+            <div class="campo-admin">
+              <label for="cfg-nome-empresa">Nome da Empresa *</label>
+              <input type="text" id="cfg-nome-empresa" required placeholder="AgroAir">
+            </div>
+            <div class="campo-admin">
+              <label for="cfg-whatsapp">WhatsApp *</label>
+              <input type="text" id="cfg-whatsapp" required placeholder="5564999999999">
+            </div>
+            <div class="campo-admin">
+              <label for="cfg-cidade">Cidade *</label>
+              <input type="text" id="cfg-cidade" required placeholder="Itumbiara">
+            </div>
+            <div class="campo-admin">
+              <label for="cfg-logo-url">Logo URL</label>
+              <input type="url" id="cfg-logo-url" placeholder="https://exemplo.com/logo.png">
+            </div>
+            <div class="campo-admin">
+              <label for="cfg-cor-principal">Cor Principal</label>
+              <input type="text" id="cfg-cor-principal" placeholder="#1a3a22">
+            </div>
+            <div class="campo-admin full">
+              <label for="cfg-mensagem-whatsapp">Mensagem padrão do WhatsApp</label>
+              <textarea id="cfg-mensagem-whatsapp" placeholder="Olá! Tenho interesse no {produto}{codigo} que vi no catálogo."></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-salvar" id="btn-salvar-config">Salvar Configurações</button>
+            <span class="form-erro" id="config-erro"></span>
+            <span class="form-sucesso" id="config-sucesso"></span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="painel.js"></script>
+</body>
+</html>
